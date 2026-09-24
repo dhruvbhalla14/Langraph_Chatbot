@@ -12,3 +12,7 @@ __pycache__/
 
 # Streamlit
 .streamlit/secrets.toml
+#database   
+chatbot.db
+chatbot.db-wal
+chatbot.db-shm
