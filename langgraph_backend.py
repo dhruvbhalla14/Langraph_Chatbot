@@ -12,6 +12,7 @@ from langchain_core.tools import tool
 from dotenv import load_dotenv
 import sqlite3
 import requests
+import os
 
 load_dotenv()
 
@@ -52,18 +53,24 @@ def calculator(first_num: float, second_num: float, operation: str) -> dict:
 
 
 
-
 @tool
 def get_stock_price(symbol: str) -> dict:
-    """
-    Fetch latest stock price for a given symbol (e.g. 'AAPL', 'TSLA') 
-    using Alpha Vantage with API key in the URL.
-    """
-    url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey=CT4K08ZS4IY4U810"
-    r = requests.get(url)
-    return r.json()
+    """Fetch the latest stock price for a symbol using Alpha Vantage."""
+    api_key = os.getenv("ALPHAVANTAGE_API_KEY")
+    if not api_key:
+        return {"error": "ALPHAVANTAGE_API_KEY is not configured"}
 
-
+    response = requests.get(
+        "https://www.alphavantage.co/query",
+        params={
+            "function": "GLOBAL_QUOTE",
+            "symbol": symbol,
+            "apikey": api_key,
+        },
+        timeout=10,
+    )
+    response.raise_for_status()
+    return response.json()
 
 tools = [search_tool, get_stock_price, calculator]
 llm_with_tools = llm.bind_tools(tools)
